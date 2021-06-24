@@ -1,0 +1,29 @@
+{
+  "name": "chishiki/message",
+  "description": "Module for ",
+  "version": "0.1.0",
+  "keywords": [
+    "php",
+    "module",
+    "perihelion",
+    "satellite"
+  ],
+  "homepage": "https://github.com/chishiki/message/",
+  "time": "2021-06-12",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Christopher Webb",
+      "email": "christopher@zenidev.com",
+      "homepage": "https://linkedin.com/in/chishiki",
+      "role": "Developer"
+    }
+  ],
+  "support": {
+    "email": "support@zenidev.com",
+    "issues": "https://github.com/chishiki/message/issues",
+    "wiki": "https://github.com/chishiki/message/wiki",
+    "source": "https://github.com/chishiki/message",
+    "docs": "https://github.com/chishiki/message/wiki"
+  }
+}
