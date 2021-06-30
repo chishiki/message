@@ -9,9 +9,10 @@ CREATE TABLE `message_Message` (
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
+    `messageSubject` varchar(255) NOT NULL,
     `messageContent` text NOT NULL,
     `messageStatus` varchar(10) NOT NULL,
-    `messageMetaData` json NOT NULL,
+    `messageMetaData` text NOT NULL,
     `messageSendDateTime` datetime,
     `messageSendIP` varchar(45),
     PRIMARY KEY (`messageID`)
@@ -19,9 +20,9 @@ CREATE TABLE `message_Message` (
 
 
 
-DROP TABLE IF EXISTS `message_Recipient`;
+DROP TABLE IF EXISTS `message_Participant`;
 
-CREATE TABLE `message_Recipient` (
+CREATE TABLE `message_Participant` (
     `userID` int(12) NOT NULL, -- perihelion_User.userID
     `messageID` int(12) NOT NULL, -- message_Message.messageID
     `siteID` int(12) NOT NULL,
@@ -29,6 +30,7 @@ CREATE TABLE `message_Recipient` (
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
+    `role` varchar(10) NOT NULL, -- [sender|recipient]
     `readState` varchar(8) NOT NULL, -- [opened|unopened]
     `flag` varchar(8), -- [null|spam|starred]
     PRIMARY KEY (`userID`, `messageID`)

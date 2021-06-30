@@ -2,7 +2,7 @@
 
 /*
 
-CREATE TABLE `message_Recipient` (
+CREATE TABLE `message_Participant` (
     `userID` int(12) NOT NULL, -- perihelion_User.userID
     `messageID` int(12) NOT NULL, -- message_Message.messageID
     `siteID` int(12) NOT NULL,
@@ -10,6 +10,7 @@ CREATE TABLE `message_Recipient` (
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
+    `role` varchar(10) NOT NULL, -- [sender|recipient]
     `readState` varchar(8) NOT NULL, -- [opened|unopened]
     `flag` varchar(8), -- [null|spam|starred]
     PRIMARY KEY (`userID`, `messageID`)
@@ -17,7 +18,7 @@ CREATE TABLE `message_Recipient` (
 
 */
 
-final class Recipient extends ORM {
+final class Participant extends ORM {
 
 	public $userID;
 	public $messageID;
@@ -26,6 +27,7 @@ final class Recipient extends ORM {
 	public $created;
 	public $updated;
 	public $deleted;
+	public $role;
 	public $readState;
 	public $flag;
 
@@ -40,6 +42,7 @@ final class Recipient extends ORM {
 		$this->created = $dt->format('Y-m-d H:i:s');
 		$this->updated = null;
 		$this->deleted = 0;
+		$this->role = null;
 		$this->readState = 'unopened';
 		$this->flag = null;
 
@@ -53,7 +56,7 @@ final class Recipient extends ORM {
 			$where[] = 'userID = :userID';
 			$where[] = 'messageID = :messageID';
 
-			$query = 'SELECT * FROM message_Receipient WHERE ' . implode(' AND ', $where) . ' LIMIT 1';
+			$query = 'SELECT * FROM message_Participant WHERE ' . implode(' AND ', $where) . ' LIMIT 1';
 
 			$statement = $nucleus->database->prepare($query);
 			$statement->bindParam(':siteID', $_SESSION['siteID'], PDO::PARAM_INT);
@@ -81,11 +84,11 @@ final class Recipient extends ORM {
 
 }
 
-final class RecipientList {
+final class ParticipantList {
 
 	private $messages;
 
-	public function __construct(ReceipientListParameters $arg) {
+	public function __construct(ParticipantListParameters $arg) {
 
 		$this->messages = array();
 
@@ -94,7 +97,7 @@ final class RecipientList {
 		$where[] = 'deleted = 0';
 
 		if ($arg->messageID) { $where[] = 'messageID = :messageID'; }
-		if ($arg->recipientID) { $where[] = 'recipientID = :recipientID'; }
+		if ($arg->participantID) { $where[] = 'participantID = :participantID'; }
 		if ($arg->readState) { $where[] = 'readState = :readState'; }
 		if ($arg->flag) { $where[] = 'flag = :flag'; }
 
@@ -106,7 +109,7 @@ final class RecipientList {
 			default: $selector = 'messageID';
 		}
 
-		$query = 'SELECT ' . $selector . ' FROM message_Recipient WHERE ' . implode(' AND ',$where) . ' ORDER BY ' . implode(', ',$orderBy);
+		$query = 'SELECT ' . $selector . ' FROM message_Participant WHERE ' . implode(' AND ',$where) . ' ORDER BY ' . implode(', ',$orderBy);
 		if ($arg->limit) { $query .= ' LIMIT ' . ($arg->offset?$arg->offset.', ':'') . $arg->limit; }
 
 		$nucleus = Nucleus::getInstance();
@@ -114,7 +117,7 @@ final class RecipientList {
 		$statement->bindParam(':siteID', $_SESSION['siteID'], PDO::PARAM_INT);
 
 		if ($arg->messageID) { $statement->bindParam(':messageID', $arg->messageID, PDO::PARAM_INT); }
-		if ($arg->recipientID) { $statement->bindParam(':recipientID', $arg->recipientID, PDO::PARAM_INT); }
+		if ($arg->participantID) { $statement->bindParam(':participantID', $arg->participantID, PDO::PARAM_INT); }
 		if ($arg->readState) { $statement->bindParam(':readState', $arg->readState, PDO::PARAM_STR); }
 		if ($arg->flag) { $statement->bindParam(':flag', $arg->flag, PDO::PARAM_STR); }
 
@@ -143,10 +146,10 @@ final class RecipientList {
 
 }
 
-final class RecipientListParameters {
+final class ParticipantListParameters {
 
 	public $messageID;
-	public $recipientID;
+	public $participantID;
 	public $readState;
 	public $flag;
 
@@ -158,7 +161,7 @@ final class RecipientListParameters {
 	public function __construct() {
 
 		$this->messageID = null;
-		$this->recipientID = null;
+		$this->participantID = null;
 		$this->readState = null;
 		$this->flag = null;
 

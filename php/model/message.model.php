@@ -10,9 +10,10 @@ CREATE TABLE `message_Message` (
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
+    `messageSubject` varchar(255) NOT NULL,
     `messageContent` text NOT NULL,
     `messageStatus` varchar(10) NOT NULL,
-    `messageMetaData` json NOT NULL,
+    `messageMetaData` text NOT NULL,
     `messageSendDateTime` datetime,
     `messageSendIP` varchar(45),
     PRIMARY KEY (`messageID`)
@@ -29,6 +30,7 @@ final class Message extends ORM {
 	public $created;
 	public $updated;
 	public $deleted;
+	public $messageSubject;
 	public $messageContent;
 	public $messageStatus; // [draft|sent|deleted]
 	public $messageMetaData; // JSON
@@ -46,6 +48,7 @@ final class Message extends ORM {
 		$this->created = $dt->format('Y-m-d H:i:s');
 		$this->updated = null;
 		$this->deleted = 0;
+		$this->messageSubject = '';
 		$this->messageContent = '';
 		$this->messageStatus = 'draft'; // [draft|sent|deleted]
 		$this->messageMetaData = '{}';

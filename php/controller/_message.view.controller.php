@@ -8,7 +8,7 @@ final class MessageViewController {
 	private $errors;
 	private $messages;
 
-	public function __construct($loc, $input, $modules, $errors, $messages) {
+	public function __construct($loc = array(), $input = array(), $modules = array(), $errors = array(), $messages = array()) {
 
 		$this->loc = $loc;
 		$this->input = $input;
@@ -21,6 +21,26 @@ final class MessageViewController {
 	public function getView() {
 
 		if ($this->loc[0] == 'message') {
+
+			$view = new MessageView();
+
+			if ($this->loc[1] == 'draft') {
+				return $view->messageDraft();
+			}
+
+			if ($this->loc[1] == 'read' && ctype_digit($this->loc[2])) {
+				$messageID = $this->loc[2];
+				return $view->messageRead($messageID);
+			}
+
+			if ($this->loc[1] == 'confirm-delete' && ctype_digit($this->loc[2])) {
+				$messageID = $this->loc[2];
+				return $view->messageConfirmDelete($messageID);
+			}
+
+			$arg = new MessageInboxParameters();
+
+			return $view->messageInbox($arg);
 
 		}
 
