@@ -75,7 +75,7 @@ final class MessageView {
 					<td class="text-center">messageReadState</td>
 					<td class="text-left">messageSubject</td>
 					<td class="text-center text-nowrap">
-						<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/" class="btn btn-sm btn-outline-info">' . Lang::getLang('messageRead') . '</a>
+						<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/" class="btn btn-sm btn-outline-info">' . Lang::getLang('view') . '</a>
 						<a href="/' . Lang::prefix() . 'message/confirm-delete/' . $messageID . '/" class="btn btn-sm btn-outline-danger">' . Lang::getLang('delete') . '</a>
 					</td>
 				</tr>
@@ -90,7 +90,40 @@ final class MessageView {
 	
 	public function messageDraft() {
 
-		$form = 'MESSAGE DRAFT';
+
+
+		$form = '
+		
+		
+			<form method="post" action="/' . Lang::prefix() . 'message/draft/">
+			
+				<div class="form-row">
+					<div class="form-group col-12 col-sm-8 col-md-4">
+						<label for="participantUsers">' . Lang::getLang('messageTo') . '</label>
+						' . UserView::userDropdown(0) . '
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-12 col-md-8">
+						<label for="messageSubject">' . Lang::getLang('messageSubject') . '</label>
+						<input type="text" class="form-control" name="messageSubject" placeholder="">
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-12">
+						<label for="messageContent">' . Lang::getLang('messagesContent') . '</label>
+						<textarea class="form-control" name="messageContent" placeholder="" rows="10"></textarea>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-12 col-sm-6 offset-sm-6 col-md-4 offset-md-8 col-lg-3 offset-lg-9 col-xl-2 offset-xl-10">
+						<button type="submit" name="messageDraftSubmit" class="btn btn-primary btn-block">' . Lang::getLang('sendMessage') . '</button>
+					</div>
+				</div>
+			
+			</form>
+
+		';
 
 		$header = Lang::getLang('messageDraft');
 		$breadcrumbs = $this->messageBreadcrumbs('draft');
@@ -123,7 +156,8 @@ final class MessageView {
 
 	private function messageBreadcrumbs($page, $messageID = null) {
 
-		if (!in_array($page,array('inbox','draft','read','confirm-delete'))) { die('perihelion encountered a problem with messageBreadcrumbs()'); }
+		if (!in_array($page,array('inbox','draft','read','confirm-delete'))) { die('messageBreadcrumbs() error: bad $page'); }
+		if (in_array($page,array('read','confirm-delete')) && is_null($messageID)) { die('messageBreadcrumbs() error: missing $messageID'); }
 
 		$panko = '<nav aria-label="breadcrumb">';
 			$panko .= '<ol class="breadcrumb">';
@@ -140,14 +174,13 @@ final class MessageView {
 				if (in_array($page,array('read','confirm-delete'))) {
 					$panko .= '<li class="breadcrumb-item' . ($page=='read'?' active':'') . '">';
 						if ($page=='read') { $panko .= Lang::getLang('message'); }
-						if ($page=='confirm-delete') { $panko .= '<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/">' . $mailSubject . '</a>'; }
+						if ($page=='confirm-delete') { $panko .= '<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/">' . Lang::getLang('message') . '</a>'; }
 					$panko .= '</li>';
 				}
 
 				if ($page == 'confirm-delete') {
-					$panko .= '<li class="breadcrumb-item active">' . Lang::getLang('mailConfirmDelete') . '</li>';
+					$panko .= '<li class="breadcrumb-item active">' . Lang::getLang('messageConfirmDelete') . '</li>';
 				}
-
 
 			$panko .= '</ol>';
 		$panko .= '</nav>';

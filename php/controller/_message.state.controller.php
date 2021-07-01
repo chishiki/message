@@ -29,6 +29,11 @@ final class MessageController {
 
 			}
 
+			if ($this->loc[1] == 'draft' && !empty($this->input)) {
+				print_r($this->input);
+				die();
+			}
+
 		}
 
 		if (isset($controller)) {
