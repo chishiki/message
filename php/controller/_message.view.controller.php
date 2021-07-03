@@ -39,6 +39,7 @@ final class MessageViewController {
 			}
 
 			$arg = new MessageInboxParameters();
+			$arg->userID = $_SESSION['userID'];
 
 			return $view->messageInbox($arg);
 

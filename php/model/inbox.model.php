@@ -9,29 +9,30 @@ final class MessageInbox {
 
 		$this->messages = array();
 
-		$where = array();
-		$where[] = 'message_Message.siteID = :siteID';
-		$where[] = 'message_Message.deleted = null';
-		$where[] = 'message_Message.messageParentID = 0';
+		$wheres = array();
+		$wheres[] = 'message_Message.siteID = :siteID';
+		$wheres[] = 'message_Message.deleted = 0';
+		$wheres[] = 'message_Message.messageParentID IS NULL';
+		if (!is_null($arg->userID)) { $wheres[] = 'message_Participant.participantUserID = :userID'; }
+		if (!is_null($arg->messageStatus)) { $wheres[] = 'message_Message.messageStatus = :messageStatus'; }
+		if (!is_null($arg->readState)) { $wheres[] = 'message_Participant.readState = :readState'; }
+		if (!is_null($arg->flag)) { $wheres[] = 'message_Participant.readState = :messageSendDateTime'; }
+		$where = implode(' AND ', $wheres);
 
-		if (!is_null($arg->userID)) { $where[] = '(message_Message.creator = :userID OR message_Participant.userID = :userID)'; }
-		if (!is_null($arg->messageStatus)) { $where[] = 'message_Message.messageStatus = :messageStatus'; }
-		if (!is_null($arg->readState)) { $where[] = 'message_Participant.readState = :readState'; }
-		if (!is_null($arg->flag)) { $where[] = 'message_Participant.readState = :messageSendDateTime'; }
+		$selectorArray = array();
+		foreach ($arg->resultSet AS $fieldAlias) { $selectorArray[] = $fieldAlias['field'] . ' AS ' . $fieldAlias['alias']; }
+		$selector = implode(', ', $selectorArray);
 
-		$orderBy = array();
-		foreach ($arg->orderBy AS $field => $sort) { $orderBy[] = $field . ' ' . $sort; }
+		$orderByArray = array();
+		foreach ($arg->orderBy AS $fieldSort) { $orderByArray[] = $fieldSort['field'] . ' ' . $fieldSort['sort']; }
+		$orderBy = implode(', ',$orderByArray);
 
-		/*
-		switch ($arg->resultSet) {
-			case 'robust': $selector = '*'; break;
-			default: $selector = 'messageID';
-		}
-		*/
-
-		$query = 'SELECT * FROM message_Participant LEFT JOIN message_Message ON message_Participant.messageID = message_Message.messageID ';
-		$query .= 'WHERE ' . implode(' AND ',$where) . ' ORDER BY ' . implode(', ',$orderBy);
+		$query = 'SELECT ' . $selector . ' FROM message_Participant ';
+		$query .= 'LEFT JOIN message_Message ON message_Participant.messageID = message_Message.messageID ';
+		$query .= 'WHERE ' . $where . ' ORDER BY ' . $orderBy;
 		if (!is_null($arg->limit)) { $query .= ' LIMIT ' . (is_null($arg->offset)?$arg->offset.', ':'') . $arg->limit; }
+
+		// print_r($query);
 
 		$nucleus = Nucleus::getInstance();
 		$statement = $nucleus->database->prepare($query);
@@ -45,12 +46,6 @@ final class MessageInbox {
 		$statement->execute();
 
 		while ($row = $statement->fetch()) {
-			/*
-			switch ($arg->resultSet) {
-				case 'robust': $this->messages[] = $row; break;
-				default: $this->messages[] = $row['messageID'];
-			}
-			*/
 			$this->messages[] = $row;
 		}
 
@@ -92,8 +87,16 @@ final class MessageInboxParameters {
 		$this->flag = null;
 		$this->messageSearchString = null;
 
-		$this->resultSet = 'id'; // [id|robust]
-		$this->orderBy = array('message_Message.messageSendDateTime' => 'DESC');
+		$this->resultSet = array(
+			array('field' => 'message_Message.messageID', 'alias' => 'messageID'),
+			array('field' => 'message_Message.messageSendDateTime', 'alias' => 'messageSendDateTime'),
+			array('field' => 'message_Participant.flag', 'alias' => 'flag'),
+			array('field' => 'message_Participant.readState', 'alias' => 'readState'),
+			array('field' => 'message_Message.messageSubject', 'alias' => 'messageSubject'),
+		);
+		$this->orderBy = array(
+			array('field' => 'message_Message.messageSendDateTime', 'sort' => 'DESC')
+		);
 		$this->limit = null;
 		$this->offset = null;
 

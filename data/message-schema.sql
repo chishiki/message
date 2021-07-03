@@ -23,15 +23,15 @@ CREATE TABLE `message_Message` (
 DROP TABLE IF EXISTS `message_Participant`;
 
 CREATE TABLE `message_Participant` (
-    `userID` int(12) NOT NULL, -- perihelion_User.userID
+    `participantUserID` int(12) NOT NULL, -- perihelion_User.userID
     `messageID` int(12) NOT NULL, -- message_Message.messageID
     `siteID` int(12) NOT NULL,
     `creator` int(12) NOT NULL,
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
-    `role` varchar(10) NOT NULL, -- [sender|recipient]
+    `role` varchar(12) NOT NULL, -- [sender|participant]
     `readState` varchar(8) NOT NULL, -- [opened|unopened]
     `flag` varchar(8), -- [null|spam|starred]
-    PRIMARY KEY (`userID`, `messageID`)
+    PRIMARY KEY (`participantUserID`, `messageID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

@@ -38,6 +38,8 @@ final class MessageView {
 								<th scope="col" class="text-center">' . Lang::getLang('messageFlag') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('messageReadState') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('messageSubject') . '</th>
+								<th scope="col" class="text-center">' . Lang::getLang('messageCorrespondents') . '</th>
+								<th scope="col" class="text-center">' . Lang::getLang('messageSendDateTime') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('action') . '</th>
 							</tr>
 						</thead>
@@ -60,20 +62,36 @@ final class MessageView {
 		$inbox = new MessageInbox($arg);
 		$messages = $inbox->messages();
 
-		$messages = array(1,2,3); // temp
+		// print_r($messages);
 
 		$rows = '';
 
-		foreach ($messages AS $messageID) {
+		foreach ($messages AS $row) {
 
-			// $message = new Message($messageID);
+			$messageID = $row['messageID'];
+			$message = new Message($messageID);
+			$participants = $message->getParticipants();
+
+			$correspondents = array();
+			foreach ($participants AS $participant) {
+				$correspondents[] = $participant['userDisplayName'];
+			}
+			$messageCorrespondents = implode(', ', $correspondents);
+
+			$flagClasses = array('inbox-message-flag', 'far', 'fa-star');
+			if ($row['flag'] == 'starred') { $flagClasses = array('inbox-message-flag', 'fas', 'fa-star'); }
+			$flag = '<span class="' . implode(' ',$flagClasses) . '" data-participant-id="' . $_SESSION['userID'] . '" data-message-id="' . $messageID . '"></span>';
+
+			$readState = Lang::getLang('messageReadState'.ucfirst($row['readState']));
 
 			$rows .= '
 				<tr id="message_id_' . $messageID . '" class="inbox-message-row">
 					<th scope="row" class="text-center">' . $messageID . '</th>
-					<td class="text-center">messageFlag</td>
-					<td class="text-center">messageReadState</td>
-					<td class="text-left">messageSubject</td>
+					<td class="text-center">' . $flag. '</td>
+					<td class="text-center">' . $readState . '</td>
+					<td class="text-left">' . $row['messageSubject']. '</td>
+					<td class="text-left">' . $messageCorrespondents . '</td>
+					<td class="text-center">' . $row['messageSendDateTime'] . '</td>
 					<td class="text-center text-nowrap">
 						<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/" class="btn btn-sm btn-outline-info">' . Lang::getLang('view') . '</a>
 						<a href="/' . Lang::prefix() . 'message/confirm-delete/' . $messageID . '/" class="btn btn-sm btn-outline-danger">' . Lang::getLang('delete') . '</a>
@@ -117,7 +135,7 @@ final class MessageView {
 				</div>
 				<div class="form-row">
 					<div class="form-group col-12 col-sm-6 offset-sm-6 col-md-4 offset-md-8 col-lg-3 offset-lg-9 col-xl-2 offset-xl-10">
-						<button type="submit" name="messageDraftSubmit" class="btn btn-primary btn-block">' . Lang::getLang('sendMessage') . '</button>
+						<button type="submit" name="message-draft-submit" class="btn btn-primary btn-block">' . Lang::getLang('sendMessage') . '</button>
 					</div>
 				</div>
 			

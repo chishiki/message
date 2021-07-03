@@ -12,6 +12,10 @@ REPLACE INTO perihelion_Lang VALUES ('messageView', 'Message', 0, 'メッセー�
 REPLACE INTO perihelion_Lang VALUES ('messageConfirmDelete', 'Confirm Delete', 0, '削除確認', 0, @now);
 REPLACE INTO perihelion_Lang VALUES ('messageInbox', 'Inbox', 0, 'インボックス', 0, @now);
 REPLACE INTO perihelion_Lang VALUES ('message', 'Message', 0, 'メッセージ', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageSendDateTime', 'Date Time', 0, '日時', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageReadStateOpened', 'Opened', 0, '既読', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageReadStateUnopened', 'Unopened', 0, '未読', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageCorrespondents', 'Correspondents', 0, 'コレスポンデント', 0, @now);
 
 -- REPLACE INTO perihelion_Lang VALUES ('xxxxxxx', 'xxxxxxx', 0, 'xxxxxxx', 0, @now);
 

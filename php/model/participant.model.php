@@ -10,7 +10,6 @@ CREATE TABLE `message_Participant` (
     `created` datetime NOT NULL,
     `updated` datetime,
     `deleted` int(1) NOT NULL,
-    `role` varchar(10) NOT NULL, -- [sender|recipient]
     `readState` varchar(8) NOT NULL, -- [opened|unopened]
     `flag` varchar(8), -- [null|spam|starred]
     PRIMARY KEY (`userID`, `messageID`)
@@ -27,7 +26,6 @@ final class Participant extends ORM {
 	public $created;
 	public $updated;
 	public $deleted;
-	public $role;
 	public $readState;
 	public $flag;
 
@@ -42,7 +40,6 @@ final class Participant extends ORM {
 		$this->created = $dt->format('Y-m-d H:i:s');
 		$this->updated = null;
 		$this->deleted = 0;
-		$this->role = null;
 		$this->readState = 'unopened';
 		$this->flag = null;
 
@@ -86,30 +83,32 @@ final class Participant extends ORM {
 
 final class ParticipantList {
 
-	private $messages;
+	private $participants;
 
 	public function __construct(ParticipantListParameters $arg) {
 
-		$this->messages = array();
+		$this->participants = array();
 
-		$where = array();
-		$where[] = 'siteID = :siteID';
-		$where[] = 'deleted = 0';
+		$wheres = array();
+		$wheres[] = 'siteID = :siteID';
+		$wheres[] = 'deleted = 0';
+		if ($arg->messageID) { $wheres[] = 'message_Participant.messageID = :messageID'; }
+		if ($arg->participantUserID) { $wheres[] = 'message_Participant.participantUserID = :participantUserID'; }
+		if ($arg->readState) { $wheres[] = 'message_Participant.readState = :readState'; }
+		if ($arg->flag) { $wheres[] = 'message_Participant.flag = :flag'; }
+		$where = implode(' AND ',$wheres);
 
-		if ($arg->messageID) { $where[] = 'messageID = :messageID'; }
-		if ($arg->participantID) { $where[] = 'participantID = :participantID'; }
-		if ($arg->readState) { $where[] = 'readState = :readState'; }
-		if ($arg->flag) { $where[] = 'flag = :flag'; }
+		$selectorArray = array();
+		foreach ($arg->resultSet AS $fieldAlias) { $selectorArray[] = $fieldAlias['field'] . ' AS ' . $fieldAlias['alias']; }
+		$selector = implode(', ', $selectorArray);
 
-		$orderBy = array();
-		foreach ($arg->orderBy AS $field => $sort) { $orderBy[] = $field . ' ' . $sort; }
+		$orderByArray = array();
+		foreach ($arg->orderBy AS $fieldSort) { $orderByArray[] = $fieldSort['field'] . ' ' . $fieldSort['sort']; }
+		$orderBy = implode(', ',$orderByArray);
 
-		switch ($arg->resultSet) {
-			case 'robust': $selector = '*'; break;
-			default: $selector = 'messageID';
-		}
-
-		$query = 'SELECT ' . $selector . ' FROM message_Participant WHERE ' . implode(' AND ',$where) . ' ORDER BY ' . implode(', ',$orderBy);
+		$query = 'SELECT ' . $selector . ' FROM message_Participant ';
+		$query .= 'LEFT JOIN perihelion_User ON message_Participant.participantUserID = perihelion_User.userID ';
+		$query .= 'WHERE ' . $where . ' ORDER BY ' . $orderBy;
 		if ($arg->limit) { $query .= ' LIMIT ' . ($arg->offset?$arg->offset.', ':'') . $arg->limit; }
 
 		$nucleus = Nucleus::getInstance();
@@ -117,30 +116,27 @@ final class ParticipantList {
 		$statement->bindParam(':siteID', $_SESSION['siteID'], PDO::PARAM_INT);
 
 		if ($arg->messageID) { $statement->bindParam(':messageID', $arg->messageID, PDO::PARAM_INT); }
-		if ($arg->participantID) { $statement->bindParam(':participantID', $arg->participantID, PDO::PARAM_INT); }
+		if ($arg->participantUserID) { $statement->bindParam(':participantUserID', $arg->participantUserID, PDO::PARAM_INT); }
 		if ($arg->readState) { $statement->bindParam(':readState', $arg->readState, PDO::PARAM_STR); }
 		if ($arg->flag) { $statement->bindParam(':flag', $arg->flag, PDO::PARAM_STR); }
 
 		$statement->execute();
 
 		while ($row = $statement->fetch()) {
-			switch ($arg->resultSet) {
-				case 'robust': $this->messages[] = $row; break;
-				default: $this->messages[] = $row['messageID'];
-			}
+			$this->participants[] = $row;
 		}
 
 	}
 
-	public function messages() {
+	public function participants() {
 
-		return $this->messages;
+		return $this->participants;
 
 	}
 
-	public function messageCount() {
+	public function participantCount() {
 
-		return count($this->messages);
+		return count($this->participants);
 
 	}
 
@@ -149,9 +145,11 @@ final class ParticipantList {
 final class ParticipantListParameters {
 
 	public $messageID;
-	public $participantID;
+	public $participantUserID;
 	public $readState;
 	public $flag;
+
+	public $otherParticipantsOnly;
 
 	public $resultSet;
 	public $orderBy;
@@ -161,12 +159,22 @@ final class ParticipantListParameters {
 	public function __construct() {
 
 		$this->messageID = null;
-		$this->participantID = null;
+		$this->participantUserID = null;
 		$this->readState = null;
+
 		$this->flag = null;
 
-		$this->resultSet = 'id'; // [id|robust]
-		$this->orderBy = array('created' => 'ASC');
+		$this->resultSet = array(
+			array('field' => 'message_Participant.participantUserID', 'alias' => 'participantUserID'),
+			array('field' => 'perihelion_User.userDisplayName', 'alias' => 'userDisplayName'),
+			array('field' => 'message_Participant.role', 'alias' => 'role'),
+			array('field' => 'message_Participant.readState', 'alias' => 'readState'),
+			array('field' => 'message_Participant.flag', 'alias' => 'flag')
+		);
+		$this->orderBy = array(
+			array('field' => 'perihelion_User.userDisplayName', 'sort' => 'ASC')
+		);
+
 		$this->limit = null;
 		$this->offset = null;
 

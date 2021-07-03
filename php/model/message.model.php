@@ -41,7 +41,7 @@ final class Message extends ORM {
 
 		$dt = new DateTime();
 
-		$this->messageID = 0;
+		$this->messageID = null;
 		$this->messageParentID = null;
 		$this->siteID = $_SESSION['siteID'];
 		$this->creator = $_SESSION['userID'];
@@ -52,8 +52,8 @@ final class Message extends ORM {
 		$this->messageContent = '';
 		$this->messageStatus = 'draft'; // [draft|sent|deleted]
 		$this->messageMetaData = '{}';
-		$this->messageSendDateTime = null;
-		$this->messageSendIP = null;
+		$this->messageSendDateTime = $dt->format('Y-m-d H:i:s');
+		$this->messageSendIP = $_SERVER['REMOTE_ADDR'];
 
 		if ($messageID) {
 
@@ -76,6 +76,15 @@ final class Message extends ORM {
 			}
 
 		}
+
+	}
+
+	public function getParticipants() {
+
+		$arg = new ParticipantListParameters();
+		$arg->messageID = $this->messageID;
+		$pl = new ParticipantList($arg);
+		return $pl->participants();
 
 	}
 

@@ -20,6 +20,8 @@ final class MessageController {
 
 	public function setState() {
 
+		$input = $this->input;
+
 		if ($this->loc[0] == 'message') {
 
 			if (!Auth::isLoggedIn()) {
@@ -29,9 +31,35 @@ final class MessageController {
 
 			}
 
-			if ($this->loc[1] == 'draft' && !empty($this->input)) {
-				print_r($this->input);
-				die();
+			if ($this->loc[1] == 'draft' && isset($input['message-draft-submit'])) {
+
+				if (empty($input['userID'])) { $this->errors[] = array('userID' => 'userMustBeSelected'); }
+
+				if (empty($this->errors)) {
+
+					// create message
+					$message = new Message();
+					$message->messageSubject = $input['messageSubject'];
+					$message->messageContent = $input['messageContent'];
+					$message->messageStatus = 'sent';
+					$messageID = Message::insert($message, true, 'message_');
+
+					// add sender participant
+					$sender = new Participant($_SESSION['userID'], $messageID);
+					$sender->readState = 'opened';
+					Participant::insert($sender, false, 'message_');
+
+					// add other participant(s)
+					if ($input['userID'] != $_SESSION['userID']) { // not required is sending to self
+						$sender = new Participant($input['userID'], $messageID);
+						Participant::insert($sender, false, 'message_');
+					}
+
+					$successURL = '/' . Lang::prefix() . 'message/';
+					header("Location: $successURL");
+
+				}
+
 			}
 
 		}
