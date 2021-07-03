@@ -108,8 +108,6 @@ final class MessageView {
 	
 	public function messageDraft() {
 
-
-
 		$form = '
 		
 		
@@ -152,11 +150,58 @@ final class MessageView {
 
 	public function messageRead($messageID) {
 
-		$read = 'MESSAGE READ ' . $messageID;
-
-		$header = Lang::getLang('messageView');
+		$message = new Message($messageID);
+		$header = $message->messageSubject;
+		$content = htmlspecialchars($message->messageContent, ENT_QUOTES, 'UTF-8');
 		$breadcrumbs = $this->messageBreadcrumbs('read', $messageID);
-		$card = new CardView('message_read',array('container'),$breadcrumbs,array('col-12'),$header,$read);
+		$messageCard = new CardView('message_read',array('container','mb-3'),$breadcrumbs,array('col-12'),$header,$content);
+
+		$replies = $this->messageReplies($messageID);
+		$replyForm = $this->messageReply($messageID);
+
+		return $messageCard->card() . $replies . $replyForm;
+
+	}
+
+	private function messageReplies($messageID) {
+
+		$message = new Message($messageID);
+		$replies = $message->getReplies();
+
+		$messageReplies = '<div class="container mb-3">';
+		for ($i = 0; $i < count($replies); $i++) {
+			$reply = new Message($replies[$i]);
+			$content = htmlspecialchars($reply->messageContent, ENT_QUOTES, 'UTF-8');
+			$messageReplies .= '<div class="card ' . ($i%2==0?'bg-light ':'') . 'mb-1"><div class="card-body">' . $content . '</div></div>';
+		}
+		$messageReplies .= '</div>';
+
+		return $messageReplies;
+
+	}
+
+	private function messageReply($messageID) {
+
+		$form = '
+
+			<form method="post" action="/' . Lang::prefix() . 'message/read/' . $messageID . '/">
+				<input type="hidden" name="messageID" value="' . $messageID . '">
+				<div class="form-row">
+					<div class="form-group col-12">
+						<textarea class="form-control" name="messageContent" placeholder="" rows="10"></textarea>
+					</div>
+				</div>
+				<div class="form-row">
+					<div class="form-group col-12 col-sm-6 offset-sm-6 col-md-4 offset-md-8 col-lg-3 offset-lg-9 col-xl-2 offset-xl-10">
+						<button type="submit" name="message-reply-submit" class="btn btn-primary btn-block">' . Lang::getLang('messageSubmitReply') . '</button>
+					</div>
+				</div>
+			</form>
+
+		';
+
+		$header = Lang::getLang('messageReply');
+		$card = new CardView('message_reply',array('container'),'',array('col-12'),$header,$form);
 		return $card->card();
 
 	}

@@ -62,6 +62,21 @@ final class MessageController {
 
 			}
 
+			if ($this->loc[1] == 'read' && is_numeric($this->loc[2]) && isset($input['message-reply-submit'])) {
+
+				$messageID = $this->loc[2];
+				if (empty($this->errors)) {
+
+					$message = new Message();
+					$message->messageParentID = $messageID;
+					$message->messageContent = $input['messageContent'];
+					$message->messageStatus = 'sent';
+					$messageID = Message::insert($message, true, 'message_');
+
+				}
+
+			}
+
 		}
 
 		if (isset($controller)) {

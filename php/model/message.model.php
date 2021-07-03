@@ -88,6 +88,16 @@ final class Message extends ORM {
 
 	}
 
+	public function getReplies() {
+
+		$arg = new MessageListParameters();
+		$arg->messageParentID = $this->messageID;
+		$arg->orderBy = array('created' => 'ASC');
+		$ml = new MessageList($arg);
+		return $ml->messages();
+
+	}
+
 	public function markAsDeleted() {
 
 		$dt = new DateTime();
@@ -114,6 +124,7 @@ final class MessageList {
 		$where[] = 'deleted = 0';
 
 		if (!is_null($arg->messageID)) { $where[] = 'messageID = :messageID'; }
+		if (!is_null($arg->messageParentID)) { $where[] = 'messageParentID = :messageParentID'; }
 		if (!is_null($arg->creator)) { $where[] = 'creator = :creator'; }
 		if (!is_null($arg->messageStatus)) { $where[] = 'messageStatus = :messageStatus'; }
 		if (!is_null($arg->messageSendDateTime)) { $where[] = 'messageSendDateTime = :messageSendDateTime'; }
@@ -135,6 +146,7 @@ final class MessageList {
 		$statement->bindParam(':siteID', $_SESSION['siteID'], PDO::PARAM_INT);
 
 		if (!is_null($arg->messageID)) { $statement->bindParam(':messageID', $arg->messageID, PDO::PARAM_INT); }
+		if (!is_null($arg->messageParentID)) { $statement->bindParam(':messageParentID', $arg->messageParentID, PDO::PARAM_INT); }
 		if (!is_null($arg->creator)) { $statement->bindParam(':creator', $arg->creator, PDO::PARAM_INT); }
 		if (!is_null($arg->messageStatus)) { $statement->bindParam(':messageStatus', $arg->messageStatus, PDO::PARAM_STR); }
 		if (!is_null($arg->messageSendDateTime)) { $statement->bindParam(':messageSendDateTime', $arg->messageSendDateTime, PDO::PARAM_STR); }
@@ -168,6 +180,7 @@ final class MessageList {
 final class MessageListParameters {
 
 	public $messageID;
+	public $messageParentID;
 	public $creator; // sender
 	public $messageStatus; // [draft|sent|deleted]
 	public $messageSendDateTime;
@@ -183,6 +196,7 @@ final class MessageListParameters {
 	public function __construct() {
 
 		$this->messageID = null;
+		$this->messageParentID = null;
 		$this->creator = null;
 		$this->messageStatus = null;
 		$this->messageSendDateTime = null;

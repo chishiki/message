@@ -16,6 +16,8 @@ REPLACE INTO perihelion_Lang VALUES ('messageSendDateTime', 'Date Time', 0, '日
 REPLACE INTO perihelion_Lang VALUES ('messageReadStateOpened', 'Opened', 0, '既読', 0, @now);
 REPLACE INTO perihelion_Lang VALUES ('messageReadStateUnopened', 'Unopened', 0, '未読', 0, @now);
 REPLACE INTO perihelion_Lang VALUES ('messageCorrespondents', 'Correspondents', 0, 'コレスポンデント', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageReply', 'Reply', 0, '返事', 0, @now);
+REPLACE INTO perihelion_Lang VALUES ('messageSubmitReply', 'Submit', 0, '送信', 0, @now);
 
 -- REPLACE INTO perihelion_Lang VALUES ('xxxxxxx', 'xxxxxxx', 0, 'xxxxxxx', 0, @now);
 
