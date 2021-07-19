@@ -19,7 +19,7 @@ CREATE TABLE `message_Participant` (
 
 final class Participant extends ORM {
 
-	public $userID;
+	public $participantUserID;
 	public $messageID;
 	public $siteID;
 	public $creator;
@@ -29,11 +29,11 @@ final class Participant extends ORM {
 	public $readState;
 	public $flag;
 
-	public function __construct($userID = null, $messageID = null) {
+	public function __construct($participantUserID = null, $messageID = null) {
 
 		$dt = new DateTime();
 
-		$this->userID = $userID;
+		$this->participantUserID = $participantUserID;
 		$this->messageID = $messageID;
 		$this->siteID = $_SESSION['siteID'];
 		$this->creator = $_SESSION['userID'];
@@ -43,21 +43,21 @@ final class Participant extends ORM {
 		$this->readState = 'unopened';
 		$this->flag = null;
 
-		if ($userID && $messageID) {
+		if ($participantUserID && $messageID) {
 
 			$nucleus = Nucleus::getInstance();
 
 			$where = array();
 			$where[] = 'siteID = :siteID';
 			$where[] = 'deleted = 0';
-			$where[] = 'userID = :userID';
+			$where[] = 'participantUserID = :participantUserID';
 			$where[] = 'messageID = :messageID';
 
 			$query = 'SELECT * FROM message_Participant WHERE ' . implode(' AND ', $where) . ' LIMIT 1';
 
 			$statement = $nucleus->database->prepare($query);
 			$statement->bindParam(':siteID', $_SESSION['siteID'], PDO::PARAM_INT);
-			$statement->bindParam(':userID', $userID, PDO::PARAM_INT);
+			$statement->bindParam(':participantUserID', $participantUserID, PDO::PARAM_INT);
 			$statement->bindParam(':messageID', $messageID, PDO::PARAM_INT);
 			$statement->execute();
 
@@ -90,8 +90,8 @@ final class ParticipantList {
 		$this->participants = array();
 
 		$wheres = array();
-		$wheres[] = 'siteID = :siteID';
-		$wheres[] = 'deleted = 0';
+		$wheres[] = 'message_Participant.siteID = :siteID';
+		$wheres[] = 'message_Participant.deleted = 0';
 		if ($arg->messageID) { $wheres[] = 'message_Participant.messageID = :messageID'; }
 		if ($arg->participantUserID) { $wheres[] = 'message_Participant.participantUserID = :participantUserID'; }
 		if ($arg->readState) { $wheres[] = 'message_Participant.readState = :readState'; }
@@ -166,8 +166,8 @@ final class ParticipantListParameters {
 
 		$this->resultSet = array(
 			array('field' => 'message_Participant.participantUserID', 'alias' => 'participantUserID'),
+			array('field' => 'message_Participant.messageID', 'alias' => 'messageID'),
 			array('field' => 'perihelion_User.userDisplayName', 'alias' => 'userDisplayName'),
-			array('field' => 'message_Participant.role', 'alias' => 'role'),
 			array('field' => 'message_Participant.readState', 'alias' => 'readState'),
 			array('field' => 'message_Participant.flag', 'alias' => 'flag')
 		);
