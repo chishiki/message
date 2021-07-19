@@ -92,14 +92,31 @@ final class MessageController {
 
 			if ($this->loc[1] == 'read' && is_numeric($this->loc[2]) && isset($input['message-reply-submit'])) {
 
-				$messageID = $this->loc[2];
+				$messageParentID = $this->loc[2];
 				if (empty($this->errors)) {
 
+					// add message to thread
 					$message = new Message();
-					$message->messageParentID = $messageID;
+					$message->messageParentID = $messageParentID;
 					$message->messageContent = $input['messageContent'];
 					$message->messageStatus = 'sent';
-					$messageID = Message::insert($message, true, 'message_');
+					Message::insert($message, false, 'message_');
+
+					// mark thread as "unopened" for all other participants
+					$arg = new ParticipantListParameters();
+					$arg->messageID = $messageParentID;
+					$arg->readState = 'opened';
+					$pl = new ParticipantList($arg);
+					$participants = $pl->participants();
+
+					foreach ($participants AS $participantData) {
+						if ($participantData['participantUserID'] != $_SESSION['userID']) {
+							$participant = new Participant($participantData['participantUserID'], $message->messageParentID);
+							$participant->readState = 'unopened';
+							$cond = array('participantUserID' => $participantData['participantUserID'], 'messageID' => $message->messageParentID);
+							Participant::update($participant, $cond, true, false, 'message_');
+						}
+					}
 
 				}
 

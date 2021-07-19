@@ -34,9 +34,8 @@ final class MessageView {
 					<table class="table table-bordered table-striped table-hover table-sm">
 						<thead class="thead-light">
 							<tr>
-								<th scope="col" class="text-center">' . Lang::getLang('id') . '</th>
+								<!--<th scope="col" class="text-center">' . Lang::getLang('id') . '</th>-->
 								<th scope="col" class="text-center">' . Lang::getLang('messageFlag') . '</th>
-								<th scope="col" class="text-center">' . Lang::getLang('messageReadState') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('messageSubject') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('messageCorrespondents') . '</th>
 								<th scope="col" class="text-center">' . Lang::getLang('messageSendDateTime') . '</th>
@@ -62,8 +61,6 @@ final class MessageView {
 		$inbox = new MessageInbox($arg);
 		$messages = $inbox->messages();
 
-		// print_r($messages);
-
 		$rows = '';
 
 		foreach ($messages AS $row) {
@@ -82,19 +79,21 @@ final class MessageView {
 			if ($row['flag'] == 'starred') { $flagClasses = array('inbox-message-flag', 'fas', 'fa-star'); }
 			$flag = '<span class="' . implode(' ',$flagClasses) . '" data-participant-id="' . $_SESSION['userID'] . '" data-message-id="' . $messageID . '"></span>';
 
-			$readState = Lang::getLang('messageReadState'.ucfirst($row['readState']));
+			$deleteButton = '';
+			if ($message->creator == $_SESSION['userID']) {
+				$deleteButton = '<a href="/' . Lang::prefix() . 'message/confirm-delete/' . $messageID . '/" class="btn btn-sm btn-outline-danger">' . Lang::getLang('delete') . '</a>';
+			}
 
 			$rows .= '
-				<tr id="message_id_' . $messageID . '" class="inbox-message-row">
-					<th scope="row" class="text-center">' . $messageID . '</th>
+				<tr id="message_id_' . $messageID . '" class="inbox-message-row' . ($row['readState']=='unopened'?' table-success':'') . '">
+					<!--<th scope="row" class="text-center">' . $messageID . '</th>-->
 					<td class="text-center">' . $flag. '</td>
-					<td class="text-center">' . $readState . '</td>
 					<td class="text-left">' . $row['messageSubject']. '</td>
 					<td class="text-left">' . $messageCorrespondents . '</td>
 					<td class="text-center">' . $row['messageSendDateTime'] . '</td>
 					<td class="text-center text-nowrap">
 						<a href="/' . Lang::prefix() . 'message/read/' . $messageID . '/" class="btn btn-sm btn-outline-info">' . Lang::getLang('view') . '</a>
-						<a href="/' . Lang::prefix() . 'message/confirm-delete/' . $messageID . '/" class="btn btn-sm btn-outline-danger">' . Lang::getLang('delete') . '</a>
+						' . $deleteButton . '
 					</td>
 				</tr>
 			';
