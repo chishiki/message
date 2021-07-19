@@ -62,6 +62,34 @@ final class MessageController {
 
 			}
 
+			if ($this->loc[1] == 'read' && is_numeric($this->loc[2])) {
+
+				// mark all messages in thread as read
+
+				$messageID = $this->loc[2];
+
+				$arg = new ParticipantListParameters();
+				$arg->participantUserID = $_SESSION['userID'];
+				$arg->messageID = $messageID;
+				$arg->readState = 'unopened';
+				$pl = new ParticipantList($arg);
+				$listOfUnopenedThreads = $pl->participants();
+
+				if (!empty($listOfUnopenedThreads) && empty($this->errors)) {
+
+					foreach ($listOfUnopenedThreads AS $participantData) {
+
+						$participant = new Participant($participantData['participantUserID'], $participantData['messageID']);
+						$participant->readState = 'opened';
+						$cond = array('participantUserID' => $participantData['participantUserID'], 'messageID' => $participantData['messageID']);
+						Participant::update($participant, $cond, true, false, 'message_');
+
+					}
+
+				}
+
+			}
+
 			if ($this->loc[1] == 'read' && is_numeric($this->loc[2]) && isset($input['message-reply-submit'])) {
 
 				$messageID = $this->loc[2];
